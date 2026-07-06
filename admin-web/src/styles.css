@@ -1,0 +1,158 @@
+/* ChustMarket boshqaruv panellari — dizayn tizimi */
+:root {
+  --bg: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --border: rgba(11, 11, 11, 0.1);
+  --brand: #2a78d6;
+  --brand-dark: #1c5cab;
+  --brand-soft: #cde2fb;
+  --good: #0ca30c;
+  --good-text: #006300;
+  --warn: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --sidebar: #14202e;
+  --sidebar-ink: #b8c4d0;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(11, 11, 11, 0.07), 0 4px 14px rgba(11, 11, 11, 0.04);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+a { color: var(--brand); text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+input, select, textarea { font: inherit; }
+
+/* ---- Tartib ---- */
+.shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 232px; flex-shrink: 0; background: var(--sidebar); color: var(--sidebar-ink);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+}
+.sidebar .logo {
+  padding: 20px 18px; font-size: 17px; font-weight: 700; color: #fff;
+  display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar nav { padding: 10px; flex: 1; overflow-y: auto; }
+.sidebar nav a {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+  color: var(--sidebar-ink); margin-bottom: 2px; font-weight: 500;
+}
+.sidebar nav a:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.sidebar nav a.active { background: var(--brand); color: #fff; }
+.sidebar .user {
+  padding: 14px 18px; border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar .user .avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--brand);
+  display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;
+}
+.sidebar .user small { color: var(--muted); display: block; }
+.sidebar .user strong { color: #fff; font-size: 13px; }
+.sidebar .user button {
+  margin-left: auto; background: none; border: none; color: var(--sidebar-ink); font-size: 16px;
+}
+.sidebar .user button:hover { color: #fff; }
+
+.main { flex: 1; padding: 24px 28px; min-width: 0; }
+.page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+.page-head h1 { font-size: 22px; margin: 0; }
+.page-head .sub { color: var(--ink-2); margin-top: 2px; }
+
+/* ---- Kartalar ---- */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-pad { padding: 18px 20px; }
+.card h3 { margin: 0 0 12px; font-size: 15px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat { padding: 16px 18px; }
+.stat .label { color: var(--ink-2); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.stat .value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+.stat .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } .sidebar { width: 64px; } .sidebar .logo span, .sidebar nav a span, .sidebar .user div { display: none; } }
+
+/* ---- Jadval ---- */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; padding: 10px 14px; border-bottom: 1px solid var(--grid); }
+td { padding: 11px 14px; border-bottom: 1px solid var(--grid); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(42, 120, 214, 0.035); }
+td .thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---- Belgilar ---- */
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge.gray { background: #efeeea; color: var(--ink-2); }
+.badge.blue { background: var(--brand-soft); color: var(--brand-dark); }
+.badge.green { background: #dcf5dc; color: var(--good-text); }
+.badge.yellow { background: #fdeecb; color: #7a5200; }
+.badge.orange { background: #fde4d8; color: #93401e; }
+.badge.red { background: #f9dcdc; color: #8f2222; }
+
+/* ---- Tugmalar ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-weight: 600; color: var(--ink); }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { background: var(--brand-dark); }
+.btn.danger { color: var(--critical); border-color: rgba(208, 59, 59, 0.35); }
+.btn.danger:hover { background: #fdf1f1; }
+.btn.sm { padding: 5px 11px; font-size: 13px; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ---- Formalar ---- */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+.input, .field input, .field select, .field textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--grid); border-radius: 8px; background: #fff; color: var(--ink);
+}
+.field input:focus, .field select:focus, .field textarea:focus, .input:focus { outline: 2px solid var(--brand-soft); border-color: var(--brand); }
+.field textarea { resize: vertical; min-height: 90px; }
+.field .row { display: flex; gap: 10px; }
+.form-error { background: #f9dcdc; color: #8f2222; padding: 9px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+
+/* ---- Filtr paneli ---- */
+.filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.filters .input, .filters select { width: auto; min-width: 160px; }
+
+/* ---- Modal ---- */
+.modal-overlay { position: fixed; inset: 0; background: rgba(11,11,11,0.45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+.modal { background: var(--surface); border-radius: 14px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; padding: 22px 24px; }
+.modal h2 { margin: 0 0 16px; font-size: 18px; }
+.modal .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+/* ---- Login ---- */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--sidebar); }
+.login-card { background: var(--surface); border-radius: 16px; padding: 34px 36px; width: 100%; max-width: 400px; }
+.login-card .brand { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+.login-card .brand-sub { text-align: center; color: var(--ink-2); margin-bottom: 22px; }
+
+/* ---- Sahifalash ---- */
+.pagination { display: flex; gap: 6px; justify-content: center; padding: 14px; }
+.pagination button { border: 1px solid var(--grid); background: var(--surface); border-radius: 7px; padding: 5px 11px; }
+.pagination button.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+/* ---- Grafik ---- */
+.chart-tooltip {
+  position: absolute; pointer-events: none; background: var(--ink); color: #fff;
+  padding: 6px 10px; border-radius: 7px; font-size: 12px; white-space: nowrap;
+  transform: translate(-50%, -110%); z-index: 10;
+}
+.empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+.toast {
+  position: fixed; bottom: 22px; right: 22px; background: var(--ink); color: #fff;
+  padding: 11px 18px; border-radius: 10px; z-index: 100; box-shadow: var(--shadow);
+}

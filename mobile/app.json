@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "ChustMarket",
+    "slug": "chust-market",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#ffffff",
+    "splash": {
+      "backgroundColor": "#2a78d6",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "uz.chust.market"
+    },
+    "android": {
+      "package": "uz.chust.market",
+      "softwareKeyboardLayoutMode": "pan"
+    },
+    "extra": {
+      "apiUrl": "http://192.168.1.10:4000"
+    }
+  }
+}
