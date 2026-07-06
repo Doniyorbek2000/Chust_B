@@ -1,4 +1,4 @@
-/** ChustMarket mobil ilova dizayn tokenlari */
+/** ADM Bozor mobil ilova dizayn tokenlari */
 export const colors = {
   brand: '#2a78d6',
   brandDark: '#1c5cab',

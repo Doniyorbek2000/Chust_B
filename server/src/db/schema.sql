@@ -1,4 +1,4 @@
--- ChustMarket ma'lumotlar bazasi sxemasi
+-- ADM Bozor ma'lumotlar bazasi sxemasi
 
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;

@@ -24,13 +24,13 @@ export default function Login() {
   return (
     <div className="login-wrap">
       <form className="login-card" onSubmit={submit}>
-        <div className="brand">🛒 ChustMarket</div>
+        <div className="brand">🛒 ADM Bozor</div>
         <div className="brand-sub">Administrator paneli</div>
         {error && <div className="form-error">{error}</div>}
         <div className="field">
           <label>Email</label>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@chust.uz" required autoFocus />
+            placeholder="admin@admbozor.uz" required autoFocus />
         </div>
         <div className="field">
           <label>Parol</label>

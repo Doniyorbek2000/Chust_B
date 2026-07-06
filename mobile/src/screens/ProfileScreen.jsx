@@ -68,7 +68,7 @@ export default function ProfileScreen({ navigation }) {
         <View style={{ padding: 16 }}>
           <Button title="Hisobdan chiqish" variant="danger" onPress={confirmLogout} />
           <Text style={{ textAlign: 'center', color: colors.muted, fontSize: 12, marginTop: 16 }}>
-            ChustMarket v1.0.0
+            ADM Bozor v1.0.0
           </Text>
         </View>
       </ScrollView>

@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api, imgUrl } from '../api/client';
 import { colors, radius, fmtSum } from '../theme';
 
-const HISTORY_KEY = 'chust_search_history';
+const HISTORY_KEY = 'adm_search_history';
 
 /** Qidiruv — jonli natijalar va qidiruv tarixi bilan */
 export default function SearchScreen({ navigation }) {

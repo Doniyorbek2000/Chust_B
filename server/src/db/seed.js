@@ -20,10 +20,10 @@ const seed = db.transaction(() => {
   const insertUser = db.prepare(
     'INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)'
   );
-  const adminId = insertUser.run('Bosh admin', 'admin@chust.uz', '+998901112233', hash, 'admin').lastInsertRowid;
-  const seller1 = insertUser.run('Akmal Karimov', 'texno@chust.uz', '+998902223344', hash, 'seller').lastInsertRowid;
-  const seller2 = insertUser.run('Dilnoza Rahimova', 'moda@chust.uz', '+998903334455', hash, 'seller').lastInsertRowid;
-  const buyerId = insertUser.run('Jasur Toshmatov', 'haridor@chust.uz', '+998904445566', hash, 'buyer').lastInsertRowid;
+  const adminId = insertUser.run('Bosh admin', 'admin@admbozor.uz', '+998901112233', hash, 'admin').lastInsertRowid;
+  const seller1 = insertUser.run('Akmal Karimov', 'texno@admbozor.uz', '+998902223344', hash, 'seller').lastInsertRowid;
+  const seller2 = insertUser.run('Dilnoza Rahimova', 'moda@admbozor.uz', '+998903334455', hash, 'seller').lastInsertRowid;
+  const buyerId = insertUser.run('Jasur Toshmatov', 'haridor@admbozor.uz', '+998904445566', hash, 'buyer').lastInsertRowid;
 
   /* --- Do'konlar --- */
   const insertShop = db.prepare(
@@ -112,7 +112,7 @@ const seed = db.transaction(() => {
     'INSERT INTO coupons (code, type, value, min_total, expires_at) VALUES (?, ?, ?, ?, ?)'
   );
   insertCoupon.run('SALOM10', 'percent', 10, 100000, null);
-  insertCoupon.run('CHUST50', 'fixed', 50000, 500000, null);
+  insertCoupon.run('ADM50', 'fixed', 50000, 500000, null);
 
   /* --- Demo buyurtma va sharh (haridor tomonidan) --- */
   const addr = db
@@ -157,9 +157,9 @@ seed();
 console.log(`✅ Seed muvaffaqiyatli yakunlandi!
 
 Demo hisoblar (parol hammasi uchun: 123456):
-  👑 Admin:     admin@chust.uz
-  🏪 Sotuvchi:  texno@chust.uz  (TexnoOlam)
-  🏪 Sotuvchi:  moda@chust.uz   (ModaLine)
-  🛒 Haridor:   haridor@chust.uz
+  👑 Admin:     admin@admbozor.uz
+  🏪 Sotuvchi:  texno@admbozor.uz  (TexnoOlam)
+  🏪 Sotuvchi:  moda@admbozor.uz   (ModaLine)
+  🛒 Haridor:   haridor@admbozor.uz
 
-Promokodlar: SALOM10 (10%), CHUST50 (50 000 so'm)`);
+Promokodlar: SALOM10 (10%), ADM50 (50 000 so'm)`);

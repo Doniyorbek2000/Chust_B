@@ -22,7 +22,7 @@ function Shell() {
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="logo">🏪 <span>{shop?.name || 'ChustMarket'}</span></div>
+        <div className="logo">🏪 <span>{shop?.name || 'ADM Bozor'}</span></div>
         <nav>
           {NAV.map(([to, icon, label]) => (
             <NavLink key={to} to={to} end={to === '/'}

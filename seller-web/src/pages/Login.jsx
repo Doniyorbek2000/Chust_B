@@ -37,7 +37,7 @@ export default function Login() {
   return (
     <div className="login-wrap">
       <form className="login-card" onSubmit={submit}>
-        <div className="brand">🏪 ChustMarket</div>
+        <div className="brand">🏪 ADM Bozor</div>
         <div className="brand-sub">Sotuvchilar paneli</div>
         {error && <div className="form-error">{error}</div>}
 

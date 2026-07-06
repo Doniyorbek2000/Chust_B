@@ -28,7 +28,7 @@ export default function LoginScreen({ navigation }) {
     <ScrollView style={{ backgroundColor: colors.surface }} contentContainerStyle={s.wrap}
       keyboardShouldPersistTaps="handled">
       <Text style={s.logo}>🛒</Text>
-      <Text style={s.title}>ChustMarket'ga xush kelibsiz</Text>
+      <Text style={s.title}>ADM Bozor'ga xush kelibsiz</Text>
       <Text style={s.sub}>Hisobingizga kiring</Text>
 
       {error ? <Text style={s.error}>{error}</Text> : null}
