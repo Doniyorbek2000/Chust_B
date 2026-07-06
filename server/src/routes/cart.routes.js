@@ -30,7 +30,10 @@ function getCart(userId) {
   });
   const subtotal = items.filter((i) => i.available).reduce((s, i) => s + i.line_total, 0);
   const shipping = subtotal === 0 || subtotal >= config.freeShippingFrom ? 0 : config.shippingFee;
-  return { items, subtotal, shipping_fee: shipping, total: subtotal + shipping };
+  return {
+    items, subtotal, shipping_fee: shipping, total: subtotal + shipping,
+    free_shipping_from: config.freeShippingFrom,
+  };
 }
 
 cartRouter.get('/', (req, res) => res.json(getCart(req.user.id)));

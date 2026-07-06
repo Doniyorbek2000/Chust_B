@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { imgUrl } from '../api/client';
-import { colors, radius, fmtSum } from '../theme';
+import { colors, radius } from '../theme';
 import { Button, QtyStepper, Empty } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
 export default function CartScreen({ navigation }) {
   const { user, cart, refreshCart, updateCartItem, removeCartItem } = useApp();
+  const { t, lname, fmtSum } = useI18n();
   const [busyId, setBusyId] = useState(null);
 
   useFocusEffect(
@@ -23,10 +24,9 @@ export default function CartScreen({ navigation }) {
   if (!user) {
     return (
       <SafeAreaView style={s.wrap} edges={['top']}>
-        <Text style={s.title}>Savat</Text>
-        <Empty icon="🔐" title="Hisobingizga kiring"
-          text="Savatdan foydalanish uchun tizimga kirishingiz kerak"
-          action={<Button title="Kirish" style={{ marginTop: 10, paddingHorizontal: 40 }}
+        <Text style={s.title}>{t('cartTitle')}</Text>
+        <Empty icon="🔐" title={t('loginRequired')} text={t('cartLoginText')}
+          action={<Button title={t('login')} style={{ marginTop: 10, paddingHorizontal: 40 }}
             onPress={() => navigation.navigate('Login')} />} />
       </SafeAreaView>
     );
@@ -43,25 +43,30 @@ export default function CartScreen({ navigation }) {
   };
 
   const remove = (item) => {
-    Alert.alert("O'chirish", `"${item.product.name}" savatdan olinsinmi?`, [
-      { text: 'Bekor qilish', style: 'cancel' },
-      { text: "O'chirish", style: 'destructive', onPress: () => removeCartItem(item.id) },
+    Alert.alert(t('delete'), t('removeFromCartQ', { name: lname(item.product) }), [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('delete'), style: 'destructive', onPress: () => removeCartItem(item.id) },
     ]);
   };
 
   const available = cart.items.filter((i) => i.available);
+  const freeFrom = cart.free_shipping_from || 300000;
+  const freeLeft = Math.max(0, freeFrom - cart.subtotal);
+  const freeProgress = Math.min(1, cart.subtotal / freeFrom);
 
   return (
     <SafeAreaView style={s.wrap} edges={['top']}>
-      <Text style={s.title}>Savat {cart.items.length ? `(${cart.items.length})` : ''}</Text>
+      <Text style={s.title}>
+        {t('cartTitle')} {cart.items.length ? `(${cart.items.length})` : ''}
+      </Text>
 
       <FlatList
         data={cart.items}
         keyExtractor={(i) => String(i.id)}
-        contentContainerStyle={{ paddingBottom: 200, paddingHorizontal: 16, gap: 10 }}
+        contentContainerStyle={{ paddingBottom: 240, paddingHorizontal: 16, gap: 10 }}
         ListEmptyComponent={
-          <Empty icon="🛒" title="Savat bo'sh" text="Mahsulotlarni qo'shib xarid qilishni boshlang"
-            action={<Button title="Xaridni boshlash" style={{ marginTop: 10, paddingHorizontal: 30 }}
+          <Empty icon="🛒" title={t('cartEmpty')} text={t('cartEmptyText')}
+            action={<Button title={t('startShopping')} style={{ marginTop: 10, paddingHorizontal: 30 }}
               onPress={() => navigation.navigate('Home')} />} />
         }
         renderItem={({ item }) => (
@@ -70,10 +75,10 @@ export default function CartScreen({ navigation }) {
               <Image source={{ uri: imgUrl(item.product.image) }} style={s.img} />
             </TouchableOpacity>
             <View style={{ flex: 1, gap: 4 }}>
-              <Text numberOfLines={2} style={{ color: colors.ink, fontSize: 13.5 }}>{item.product.name}</Text>
+              <Text numberOfLines={2} style={{ color: colors.ink, fontSize: 13.5 }}>{lname(item.product)}</Text>
               <Text style={{ color: colors.muted, fontSize: 12 }}>{item.product.shop_name}</Text>
               {!item.available && (
-                <Text style={{ color: colors.danger, fontSize: 12, fontWeight: '600' }}>Omborda qolmagan</Text>
+                <Text style={{ color: colors.danger, fontSize: 12, fontWeight: '600' }}>{t('outOfStock')}</Text>
               )}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
                 <Text style={{ fontWeight: '800', color: colors.ink, fontSize: 15 }}>
@@ -94,21 +99,32 @@ export default function CartScreen({ navigation }) {
 
       {available.length > 0 && (
         <View style={s.summary}>
+          {/* Bepul yetkazish progressi */}
+          <View style={{ marginBottom: 4 }}>
+            <Text style={{ fontSize: 12.5, fontWeight: '600', color: freeLeft > 0 ? colors.ink2 : colors.goodText }}>
+              {freeLeft > 0 ? t('freeShipLeft', { n: fmtSum(freeLeft) }) : t('freeShipDone')}
+            </Text>
+            <View style={s.progressTrack}>
+              <View style={[s.progressFill, { width: `${freeProgress * 100}%` },
+                freeLeft === 0 && { backgroundColor: colors.good }]} />
+            </View>
+          </View>
+
           <View style={s.sumRow}>
-            <Text style={{ color: colors.ink2 }}>Mahsulotlar ({available.length})</Text>
+            <Text style={{ color: colors.ink2 }}>{t('productsN', { n: available.length })}</Text>
             <Text style={{ fontWeight: '600', color: colors.ink }}>{fmtSum(cart.subtotal)}</Text>
           </View>
           <View style={s.sumRow}>
-            <Text style={{ color: colors.ink2 }}>Yetkazib berish</Text>
+            <Text style={{ color: colors.ink2 }}>{t('shipping')}</Text>
             <Text style={{ fontWeight: '600', color: cart.shipping_fee ? colors.ink : colors.goodText }}>
-              {cart.shipping_fee ? fmtSum(cart.shipping_fee) : 'Bepul'}
+              {cart.shipping_fee ? fmtSum(cart.shipping_fee) : t('free')}
             </Text>
           </View>
           <View style={[s.sumRow, { borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 10 }]}>
-            <Text style={{ fontWeight: '800', fontSize: 16, color: colors.ink }}>Jami</Text>
+            <Text style={{ fontWeight: '800', fontSize: 16, color: colors.ink }}>{t('total')}</Text>
             <Text style={{ fontWeight: '800', fontSize: 16, color: colors.ink }}>{fmtSum(cart.total)}</Text>
           </View>
-          <Button title="Buyurtma berish →" onPress={() => navigation.navigate('Checkout')} />
+          <Button title={t('checkoutBtn')} onPress={() => navigation.navigate('Checkout')} />
         </View>
       )}
     </SafeAreaView>
@@ -129,4 +145,8 @@ const s = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: colors.line, gap: 8,
   },
   sumRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  progressTrack: {
+    height: 6, backgroundColor: colors.line, borderRadius: 3, marginTop: 6, overflow: 'hidden',
+  },
+  progressFill: { height: '100%', backgroundColor: colors.brand, borderRadius: 3 },
 });

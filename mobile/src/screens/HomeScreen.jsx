@@ -4,20 +4,25 @@ import {
   RefreshControl, Dimensions, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api, imgUrl } from '../api/client';
 import { colors, radius } from '../theme';
 import { ProductCard, SectionHead, Loading } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
 const { width: SCREEN_W } = Dimensions.get('window');
+const RECENT_KEY = 'adm_recent_products';
 
 export default function HomeScreen({ navigation }) {
   const { favIds, toggleFavorite, user } = useApp();
+  const { t, lname } = useI18n();
   const [banners, setBanners] = useState([]);
   const [categories, setCategories] = useState([]);
   const [popular, setPopular] = useState([]);
   const [discounted, setDiscounted] = useState([]);
   const [fresh, setFresh] = useState([]);
+  const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
@@ -36,23 +41,53 @@ export default function HomeScreen({ navigation }) {
     setPopular(p.products);
     setDiscounted(d.products.filter((x) => x.discount_percent > 0));
     setFresh(n.products);
+
+    // oxirgi ko'rilgan mahsulotlar (lokal saqlanadi)
+    try {
+      const ids = JSON.parse((await AsyncStorage.getItem(RECENT_KEY)) || '[]');
+      if (ids.length) {
+        const r = await api(`/products?ids=${ids.join(',')}&limit=20`);
+        const byId = new Map(r.products.map((x) => [x.id, x]));
+        setRecent(ids.map((id) => byId.get(id)).filter(Boolean));
+      } else {
+        setRecent([]);
+      }
+    } catch {
+      /* jim */
+    }
   }, []);
 
   useEffect(() => {
     load().finally(() => setLoading(false));
   }, [load]);
 
+  // ekranga qaytganda "oxirgi ko'rilganlar" yangilanadi
+  useEffect(() => {
+    const unsub = navigation.addListener('focus', async () => {
+      try {
+        const ids = JSON.parse((await AsyncStorage.getItem(RECENT_KEY)) || '[]');
+        if (!ids.length) return;
+        const r = await api(`/products?ids=${ids.join(',')}&limit=20`);
+        const byId = new Map(r.products.map((x) => [x.id, x]));
+        setRecent(ids.map((id) => byId.get(id)).filter(Boolean));
+      } catch {
+        /* jim */
+      }
+    });
+    return unsub;
+  }, [navigation]);
+
   // banner avtomatik aylanishi
   useEffect(() => {
     if (banners.length < 2) return;
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setBannerIndex((i) => {
         const next = (i + 1) % banners.length;
         bannerRef.current?.scrollToIndex({ index: next, animated: true });
         return next;
       });
     }, 4000);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, [banners.length]);
 
   const onRefresh = async () => {
@@ -100,7 +135,7 @@ export default function HomeScreen({ navigation }) {
         <View style={s.topBar}>
           <TouchableOpacity style={s.searchBox} activeOpacity={0.7}
             onPress={() => navigation.navigate('Search')}>
-            <Text style={{ color: colors.muted }}>🔍  Mahsulot qidirish…</Text>
+            <Text style={{ color: colors.muted }}>🔍  {t('searchPlaceholder')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.bellBtn} onPress={() =>
             user ? navigation.navigate('Notifications') : navigation.navigate('Login')}>
@@ -137,7 +172,7 @@ export default function HomeScreen({ navigation }) {
         )}
 
         {/* Kategoriyalar */}
-        <SectionHead title="Kategoriyalar" onMore={() => navigation.navigate('Catalog')} />
+        <SectionHead title={t('categories')} onMore={() => navigation.navigate('Catalog')} />
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -146,11 +181,11 @@ export default function HomeScreen({ navigation }) {
           contentContainerStyle={{ paddingHorizontal: 16, gap: 14 }}
           renderItem={({ item }) => (
             <TouchableOpacity style={{ alignItems: 'center', width: 72 }}
-              onPress={() => navigation.navigate('ProductList', { category: item.id, title: item.name })}>
+              onPress={() => navigation.navigate('ProductList', { category: item.id, title: lname(item) })}>
               <View style={s.catCircle}>
                 <Text style={{ fontSize: 26 }}>{item.icon || '🛍️'}</Text>
               </View>
-              <Text numberOfLines={2} style={s.catName}>{item.name}</Text>
+              <Text numberOfLines={2} style={s.catName}>{lname(item)}</Text>
             </TouchableOpacity>
           )}
         />
@@ -158,21 +193,29 @@ export default function HomeScreen({ navigation }) {
         {/* Chegirmalar */}
         {discounted.length > 0 && (
           <>
-            <SectionHead title="🔥 Chegirmalar"
-              onMore={() => navigation.navigate('ProductList', { sort: 'discount', title: 'Chegirmalar' })} />
+            <SectionHead title={t('discounts')}
+              onMore={() => navigation.navigate('ProductList', { sort: 'discount', title: t('sortDiscount') })} />
             <HScroll items={discounted} />
           </>
         )}
 
         {/* Ommabop */}
-        <SectionHead title="⭐ Ommabop mahsulotlar"
-          onMore={() => navigation.navigate('ProductList', { sort: 'popular', title: 'Ommabop' })} />
+        <SectionHead title={t('popularProducts')}
+          onMore={() => navigation.navigate('ProductList', { sort: 'popular', title: t('sortPopular') })} />
         <HScroll items={popular} />
 
         {/* Yangi */}
-        <SectionHead title="🆕 Yangi kelganlar"
-          onMore={() => navigation.navigate('ProductList', { sort: 'new', title: 'Yangi mahsulotlar' })} />
+        <SectionHead title={t('newProducts')}
+          onMore={() => navigation.navigate('ProductList', { sort: 'new', title: t('sortNew') })} />
         <HScroll items={fresh} />
+
+        {/* Oxirgi ko'rilganlar */}
+        {recent.length > 0 && (
+          <>
+            <SectionHead title={t('recentlyViewed')} />
+            <HScroll items={recent} />
+          </>
+        )}
 
         <View style={{ height: 24 }} />
       </ScrollView>

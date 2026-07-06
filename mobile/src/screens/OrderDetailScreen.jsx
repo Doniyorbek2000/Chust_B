@@ -4,13 +4,15 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { api, imgUrl } from '../api/client';
-import { colors, radius, fmtSum, fmtDate, ORDER_STATUS } from '../theme';
+import { colors, radius, ORDER_STATUS_STYLE } from '../theme';
 import { Loading, Button } from '../components/ui';
+import { useI18n, ORDER_STATUS_KEYS } from '../i18n';
 
 const TIMELINE = ['pending', 'confirmed', 'shipped', 'delivered'];
 
-export default function OrderDetailScreen({ route, navigation }) {
+export default function OrderDetailScreen({ route }) {
   const { id } = route.params;
+  const { t, terr, fmtSum, fmtDate } = useI18n();
   const [order, setOrder] = useState(null);
   const [reviewing, setReviewing] = useState(null); // order item
 
@@ -27,21 +29,22 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   if (!order) return <Loading />;
 
-  const st = ORDER_STATUS[order.status];
+  const st = ORDER_STATUS_STYLE[order.status];
   const cancelled = order.status === 'cancelled';
   const reachedIndex = TIMELINE.indexOf(order.status);
+  const PAY_LABEL = { pending: t('payPending'), paid: t('payPaid'), refunded: t('payRefunded') };
 
   const cancel = () => {
-    Alert.alert('Bekor qilish', 'Buyurtmani bekor qilmoqchimisiz?', [
-      { text: "Yo'q", style: 'cancel' },
+    Alert.alert(t('cancelOrder'), t('cancelOrderQ'), [
+      { text: t('no'), style: 'cancel' },
       {
-        text: 'Ha, bekor qilish', style: 'destructive',
+        text: t('yesCancel'), style: 'destructive',
         onPress: async () => {
           try {
             await api(`/orders/${order.id}/cancel`, { method: 'POST' });
             load();
           } catch (e) {
-            Alert.alert('Xatolik', e.message);
+            Alert.alert(t('error'), terr(e.message));
           }
         },
       },
@@ -55,7 +58,9 @@ export default function OrderDetailScreen({ route, navigation }) {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={{ fontSize: 17, fontWeight: '800', color: colors.ink }}>{order.shop?.name}</Text>
           <View style={[s.statusPill, { backgroundColor: st.bg }]}>
-            <Text style={{ color: st.color, fontWeight: '700', fontSize: 12 }}>{st.icon} {st.label}</Text>
+            <Text style={{ color: st.color, fontWeight: '700', fontSize: 12 }}>
+              {st.icon} {t(ORDER_STATUS_KEYS[order.status])}
+            </Text>
           </View>
         </View>
         <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{fmtDate(order.created_at)}</Text>
@@ -80,7 +85,7 @@ export default function OrderDetailScreen({ route, navigation }) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
             {TIMELINE.map((step) => (
               <Text key={step} style={{ fontSize: 10, color: colors.muted, flex: 1, textAlign: 'center' }}>
-                {ORDER_STATUS[step].label}
+                {t(ORDER_STATUS_KEYS[step])}
               </Text>
             ))}
           </View>
@@ -92,7 +97,7 @@ export default function OrderDetailScreen({ route, navigation }) {
             <View key={i} style={{ flexDirection: 'row', gap: 8 }}>
               <Text style={{ color: colors.muted, fontSize: 12, width: 108 }}>{fmtDate(h.created_at)}</Text>
               <Text style={{ color: colors.ink2, fontSize: 12, flex: 1 }}>
-                {ORDER_STATUS[h.status]?.label}{h.note ? ` — ${h.note}` : ''}
+                {t(ORDER_STATUS_KEYS[h.status])}
               </Text>
             </View>
           ))}
@@ -101,7 +106,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
       {/* Mahsulotlar */}
       <View style={s.card}>
-        <Text style={s.cardTitle}>Mahsulotlar</Text>
+        <Text style={s.cardTitle}>{t('productsBlock')}</Text>
         {order.items.map((it) => (
           <View key={it.id} style={s.itemRow}>
             <Image source={{ uri: imgUrl(it.image) }} style={s.itemImg} />
@@ -113,7 +118,7 @@ export default function OrderDetailScreen({ route, navigation }) {
               {order.status === 'delivered' && (
                 <TouchableOpacity onPress={() => setReviewing(it)}>
                   <Text style={{ color: colors.brand, fontWeight: '600', fontSize: 13, marginTop: 4 }}>
-                    ⭐ Baholash
+                    {t('rate')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -125,29 +130,29 @@ export default function OrderDetailScreen({ route, navigation }) {
 
       {/* To'lov xulosasi */}
       <View style={s.card}>
-        <Text style={s.cardTitle}>To'lov</Text>
-        <Row label="Mahsulotlar" value={fmtSum(order.subtotal)} />
-        <Row label="Yetkazib berish" value={order.shipping_fee ? fmtSum(order.shipping_fee) : 'Bepul'} />
+        <Text style={s.cardTitle}>{t('paymentBlock')}</Text>
+        <Row label={t('productsBlock')} value={fmtSum(order.subtotal)} />
+        <Row label={t('shipping')} value={order.shipping_fee ? fmtSum(order.shipping_fee) : t('free')} />
         {order.discount > 0 && (
-          <Row label={`Chegirma${order.coupon_code ? ` (${order.coupon_code})` : ''}`}
+          <Row label={`${t('discount')}${order.coupon_code ? ` (${order.coupon_code})` : ''}`}
             value={`−${fmtSum(order.discount)}`} good />
         )}
         <View style={{ borderTopWidth: 1, borderTopColor: colors.line, marginVertical: 8 }} />
-        <Row label="Jami" value={fmtSum(order.total)} bold />
-        <Row label="Usul"
-          value={`${order.payment_method === 'card' ? '💳 Karta' : '💵 Naqd'} · ${{ pending: 'kutilmoqda', paid: "to'langan", refunded: 'qaytarilgan' }[order.payment_status]}`} />
+        <Row label={t('total')} value={fmtSum(order.total)} bold />
+        <Row label={t('method')}
+          value={`${order.payment_method === 'card' ? t('cardShort') : t('cashShort')} · ${PAY_LABEL[order.payment_status]}`} />
       </View>
 
       {/* Manzil */}
       <View style={s.card}>
-        <Text style={s.cardTitle}>Yetkazib berish manzili</Text>
+        <Text style={s.cardTitle}>{t('addressBlock')}</Text>
         <Text style={{ color: colors.ink2, lineHeight: 20 }}>
           {order.address.region}, {order.address.city}{'\n'}{order.address.street}{'\n'}{order.address.phone}
         </Text>
       </View>
 
       {['pending', 'confirmed'].includes(order.status) && (
-        <Button title="Buyurtmani bekor qilish" variant="danger" onPress={cancel} />
+        <Button title={t('cancelOrder')} variant="danger" onPress={cancel} />
       )}
 
       {/* Baholash modali */}
@@ -155,7 +160,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         {reviewing && (
           <ReviewSheet item={reviewing} orderId={order.id}
             onClose={() => setReviewing(null)}
-            onDone={() => { setReviewing(null); Alert.alert('Rahmat!', 'Sharhingiz saqlandi'); }} />
+            onDone={() => { setReviewing(null); Alert.alert(t('thanks'), t('reviewSaved')); }} />
         )}
       </Modal>
     </ScrollView>
@@ -163,6 +168,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 }
 
 function ReviewSheet({ item, orderId, onClose, onDone }) {
+  const { t, terr } = useI18n();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
@@ -176,7 +182,7 @@ function ReviewSheet({ item, orderId, onClose, onDone }) {
       });
       onDone();
     } catch (e) {
-      Alert.alert('Xatolik', e.message);
+      Alert.alert(t('error'), terr(e.message));
     } finally {
       setBusy(false);
     }
@@ -197,13 +203,13 @@ function ReviewSheet({ item, orderId, onClose, onDone }) {
         </View>
         <TextInput
           style={s.commentInput}
-          placeholder="Fikringizni yozing (ixtiyoriy)…"
+          placeholder={t('reviewPlaceholder')}
           placeholderTextColor={colors.muted}
           multiline
           value={comment}
           onChangeText={setComment}
         />
-        <Button title="Yuborish" loading={busy} onPress={submit} style={{ marginTop: 12 }} />
+        <Button title={t('send')} loading={busy} onPress={submit} style={{ marginTop: 12 }} />
       </TouchableOpacity>
     </TouchableOpacity>
   );

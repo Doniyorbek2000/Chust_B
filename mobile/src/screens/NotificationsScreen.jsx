@@ -2,12 +2,16 @@ import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { api } from '../api/client';
-import { colors, radius, fmtDate } from '../theme';
+import { colors, radius } from '../theme';
 import { Loading, Empty } from '../components/ui';
+import { useI18n } from '../i18n';
+import { toCyrillic } from '../i18n/translit';
 
 const TYPE_ICON = { order: '📦', shop: '🏪', product: '🛍️', info: 'ℹ️' };
 
 export default function NotificationsScreen() {
+  const { locale, fmtDate } = useI18n();
+  const { t } = useI18n();
   const [items, setItems] = useState(null);
 
   useFocusEffect(
@@ -23,19 +27,22 @@ export default function NotificationsScreen() {
 
   if (!items) return <Loading />;
 
+  // server bildirishnomalari o'zbek lotinda — kirill rejimida transliteratsiya qilamiz
+  const view = (text) => (locale === 'cy' ? toCyrillic(text) : text);
+
   return (
     <FlatList
       style={{ backgroundColor: colors.bg }}
       data={items}
       keyExtractor={(n) => String(n.id)}
       contentContainerStyle={{ padding: 16, gap: 8 }}
-      ListEmptyComponent={<Empty icon="🔔" title="Bildirishnoma yo'q" />}
+      ListEmptyComponent={<Empty icon="🔔" title={t('notifEmpty')} />}
       renderItem={({ item }) => (
         <View style={[s.card, !item.read && { borderColor: colors.brand, backgroundColor: colors.brandSoft }]}>
           <Text style={{ fontSize: 20 }}>{TYPE_ICON[item.type] || 'ℹ️'}</Text>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontWeight: '700', color: colors.ink }}>{item.title}</Text>
-            {item.body ? <Text style={{ color: colors.ink2, fontSize: 13, marginTop: 2 }}>{item.body}</Text> : null}
+            <Text style={{ fontWeight: '700', color: colors.ink }}>{view(item.title)}</Text>
+            {item.body ? <Text style={{ color: colors.ink2, fontSize: 13, marginTop: 2 }}>{view(item.body)}</Text> : null}
             <Text style={{ color: colors.muted, fontSize: 11, marginTop: 4 }}>{fmtDate(item.created_at)}</Text>
           </View>
         </View>

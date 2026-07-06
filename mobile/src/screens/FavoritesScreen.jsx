@@ -6,9 +6,11 @@ import { api } from '../api/client';
 import { colors } from '../theme';
 import { ProductCard, Empty, Button, Loading } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
 export default function FavoritesScreen({ navigation }) {
   const { user, favIds, toggleFavorite } = useApp();
+  const { t } = useI18n();
   const [products, setProducts] = useState(null);
 
   useFocusEffect(
@@ -21,9 +23,9 @@ export default function FavoritesScreen({ navigation }) {
   if (!user) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-        <Text style={{ fontSize: 24, fontWeight: '800', color: colors.ink, padding: 16 }}>Sevimlilar</Text>
-        <Empty icon="🔐" title="Hisobingizga kiring" text="Sevimlilar ro'yxati uchun tizimga kiring"
-          action={<Button title="Kirish" style={{ marginTop: 10, paddingHorizontal: 40 }}
+        <Text style={{ fontSize: 24, fontWeight: '800', color: colors.ink, padding: 16 }}>{t('favTitle')}</Text>
+        <Empty icon="🔐" title={t('loginRequired')} text={t('favLoginText')}
+          action={<Button title={t('login')} style={{ marginTop: 10, paddingHorizontal: 40 }}
             onPress={() => navigation.navigate('Login')} />} />
       </SafeAreaView>
     );
@@ -32,7 +34,7 @@ export default function FavoritesScreen({ navigation }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <Text style={{ fontSize: 24, fontWeight: '800', color: colors.ink, padding: 16, paddingBottom: 10 }}>
-        Sevimlilar {products?.length ? `(${products.length})` : ''}
+        {t('favTitle')} {products?.length ? `(${products.length})` : ''}
       </Text>
       {!products ? (
         <Loading />
@@ -44,8 +46,7 @@ export default function FavoritesScreen({ navigation }) {
           columnWrapperStyle={{ gap: 10, paddingHorizontal: 16 }}
           contentContainerStyle={{ gap: 10, paddingBottom: 24 }}
           ListEmptyComponent={
-            <Empty icon="❤️" title="Sevimlilar bo'sh"
-              text="Mahsulot kartasidagi yurak belgisini bosib qo'shing" />
+            <Empty icon="❤️" title={t('favEmpty')} text={t('favEmptyText')} />
           }
           renderItem={({ item }) => (
             <ProductCard

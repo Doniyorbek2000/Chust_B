@@ -3,45 +3,56 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius } from '../theme';
 import { Button, Empty } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n, LOCALES } from '../i18n';
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useApp();
+  const { t, locale } = useI18n();
+
+  const localeLabel = LOCALES.find((l) => l.code === locale)?.label || '';
 
   if (!user) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-        <Text style={s.title}>Profil</Text>
-        <Empty icon="👤" title="Hisobingizga kiring"
-          text="Buyurtmalar, manzillar va sozlamalar uchun tizimga kiring"
+        <Text style={s.title}>{t('profileTitle')}</Text>
+        <Empty icon="👤" title={t('loginRequired')} text={t('profileLoginText')}
           action={
             <View style={{ gap: 10, marginTop: 12, width: 220 }}>
-              <Button title="Kirish" onPress={() => navigation.navigate('Login')} />
-              <Button title="Ro'yxatdan o'tish" variant="ghost"
+              <Button title={t('login')} onPress={() => navigation.navigate('Login')} />
+              <Button title={t('register')} variant="ghost"
                 onPress={() => navigation.navigate('Register')} />
             </View>
           } />
+        {/* Til tanlash mehmonlar uchun ham ochiq */}
+        <TouchableOpacity style={[s.menu, s.row, { marginBottom: 24, borderBottomWidth: 1 }]}
+          onPress={() => navigation.navigate('Language')}>
+          <Text style={{ fontSize: 18 }}>🌐</Text>
+          <Text style={{ flex: 1, fontSize: 15, color: colors.ink }}>{t('language')}</Text>
+          <Text style={{ color: colors.muted, fontSize: 13 }}>{localeLabel} ›</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   const rows = [
-    ['📦', 'Buyurtmalarim', () => navigation.navigate('Orders')],
-    ['📍', 'Manzillarim', () => navigation.navigate('Addresses')],
-    ['🔔', 'Bildirishnomalar', () => navigation.navigate('Notifications')],
-    ['✏️', 'Profilni tahrirlash', () => navigation.navigate('EditProfile')],
+    ['📦', t('myOrders'), () => navigation.navigate('Orders')],
+    ['📍', t('myAddresses'), () => navigation.navigate('Addresses')],
+    ['🔔', t('notificationsTitle'), () => navigation.navigate('Notifications')],
+    ['✏️', t('editProfile'), () => navigation.navigate('EditProfile')],
+    ['🌐', t('language'), () => navigation.navigate('Language'), localeLabel],
   ];
 
   const confirmLogout = () => {
-    Alert.alert('Chiqish', 'Hisobdan chiqmoqchimisiz?', [
-      { text: 'Bekor qilish', style: 'cancel' },
-      { text: 'Chiqish', style: 'destructive', onPress: logout },
+    Alert.alert(t('logout'), t('logoutQ'), [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('logoutBtn'), style: 'destructive', onPress: logout },
     ]);
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView>
-        <Text style={s.title}>Profil</Text>
+        <Text style={s.title}>{t('profileTitle')}</Text>
 
         <View style={s.userCard}>
           <View style={s.avatar}>
@@ -55,18 +66,19 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <View style={s.menu}>
-          {rows.map(([icon, label, onPress], i) => (
+          {rows.map(([icon, label, onPress, extra], i) => (
             <TouchableOpacity key={label} style={[s.row, i === rows.length - 1 && { borderBottomWidth: 0 }]}
               onPress={onPress}>
               <Text style={{ fontSize: 18 }}>{icon}</Text>
               <Text style={{ flex: 1, fontSize: 15, color: colors.ink }}>{label}</Text>
+              {extra ? <Text style={{ color: colors.muted, fontSize: 13 }}>{extra}</Text> : null}
               <Text style={{ color: colors.muted }}>›</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={{ padding: 16 }}>
-          <Button title="Hisobdan chiqish" variant="danger" onPress={confirmLogout} />
+          <Button title={t('logout')} variant="danger" onPress={confirmLogout} />
           <Text style={{ textAlign: 'center', color: colors.muted, fontSize: 12, marginTop: 16 }}>
             ADM Bozor v1.0.0
           </Text>

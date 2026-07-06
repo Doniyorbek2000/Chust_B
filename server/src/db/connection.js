@@ -14,3 +14,17 @@ db.pragma('foreign_keys = ON');
 
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 db.exec(schema);
+
+// Idempotent migratsiyalar — eski bazalarga yangi ustunlarni qo'shadi
+const MIGRATIONS = [
+  'ALTER TABLE categories ADD COLUMN name_ru TEXT',
+  'ALTER TABLE products ADD COLUMN name_ru TEXT',
+  'ALTER TABLE products ADD COLUMN description_ru TEXT',
+];
+for (const sql of MIGRATIONS) {
+  try {
+    db.exec(sql);
+  } catch {
+    /* ustun allaqachon mavjud */
+  }
+}

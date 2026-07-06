@@ -25,15 +25,23 @@ catalogRouter.get('/categories', (_req, res) => {
  * ?q= &category= &shop= &min_price= &max_price= &sort=new|price_asc|price_desc|popular|rating&page=&limit=
  */
 catalogRouter.get('/products', (req, res) => {
-  const { q, category, shop, min_price, max_price, sort = 'new' } = req.query;
+  const { q, category, shop, min_price, max_price, ids, sort = 'new' } = req.query;
   const { page, limit, offset } = getPagination(req.query);
 
   const where = ["p.status = 'active'", "s.status = 'approved'"];
   const params = [];
 
   if (q) {
-    where.push('(p.name LIKE ? OR p.description LIKE ?)');
-    params.push(`%${q}%`, `%${q}%`);
+    where.push('(p.name LIKE ? OR p.name_ru LIKE ? OR p.description LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+  }
+  if (ids) {
+    // oxirgi ko'rilganlar uchun: ?ids=1,2,3 (ko'pi bilan 20 ta)
+    const list = String(ids).split(',').map((n) => parseInt(n, 10)).filter(Boolean).slice(0, 20);
+    if (list.length) {
+      where.push(`p.id IN (${list.map(() => '?').join(',')})`);
+      params.push(...list);
+    }
   }
   if (category) {
     // tanlangan kategoriya va uning bolalari

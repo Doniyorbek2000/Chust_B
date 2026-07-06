@@ -5,12 +5,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api, imgUrl } from '../api/client';
-import { colors, radius, fmtSum } from '../theme';
+import { colors, radius } from '../theme';
+import { useI18n } from '../i18n';
 
 const HISTORY_KEY = 'adm_search_history';
 
 /** Qidiruv — jonli natijalar va qidiruv tarixi bilan */
 export default function SearchScreen({ navigation }) {
+  const { t, lname, fmtSum } = useI18n();
   const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
   const [history, setHistory] = useState([]);
@@ -19,8 +21,8 @@ export default function SearchScreen({ navigation }) {
 
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY).then((v) => v && setHistory(JSON.parse(v)));
-    const t = setTimeout(() => inputRef.current?.focus(), 300);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => inputRef.current?.focus(), 300);
+    return () => clearTimeout(timer);
   }, []);
 
   // jonli qidiruv (debounce 350ms)
@@ -45,10 +47,10 @@ export default function SearchScreen({ navigation }) {
   };
 
   const submit = (term) => {
-    const t = (term ?? q).trim();
-    if (!t) return;
-    saveHistory(t);
-    navigation.replace('ProductList', { q: t, title: `"${t}"` });
+    const value = (term ?? q).trim();
+    if (!value) return;
+    saveHistory(value);
+    navigation.replace('ProductList', { q: value, title: `"${value}"` });
   };
 
   return (
@@ -60,7 +62,7 @@ export default function SearchScreen({ navigation }) {
         <TextInput
           ref={inputRef}
           style={s.input}
-          placeholder="Mahsulot qidirish…"
+          placeholder={t('searchPlaceholder')}
           placeholderTextColor={colors.muted}
           value={q}
           onChangeText={setQ}
@@ -79,9 +81,9 @@ export default function SearchScreen({ navigation }) {
           {history.length > 0 && (
             <>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-                <Text style={{ fontWeight: '700', color: colors.ink }}>Qidiruv tarixi</Text>
+                <Text style={{ fontWeight: '700', color: colors.ink }}>{t('searchHistory')}</Text>
                 <TouchableOpacity onPress={() => { setHistory([]); AsyncStorage.removeItem(HISTORY_KEY); }}>
-                  <Text style={{ color: colors.muted, fontSize: 13 }}>Tozalash</Text>
+                  <Text style={{ color: colors.muted, fontSize: 13 }}>{t('clear')}</Text>
                 </TouchableOpacity>
               </View>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -102,9 +104,7 @@ export default function SearchScreen({ navigation }) {
           ListHeaderComponent={
             results.length > 0 ? (
               <TouchableOpacity style={s.allRow} onPress={() => submit()}>
-                <Text style={{ color: colors.brand, fontWeight: '700' }}>
-                  Barcha natijalarni ko'rish →
-                </Text>
+                <Text style={{ color: colors.brand, fontWeight: '700' }}>{t('seeAllResults')}</Text>
               </TouchableOpacity>
             ) : null
           }
@@ -116,7 +116,7 @@ export default function SearchScreen({ navigation }) {
               }}>
               <Image source={{ uri: imgUrl(item.image) }} style={s.resultImg} />
               <View style={{ flex: 1 }}>
-                <Text numberOfLines={1} style={{ color: colors.ink, fontSize: 14 }}>{item.name}</Text>
+                <Text numberOfLines={1} style={{ color: colors.ink, fontSize: 14 }}>{lname(item)}</Text>
                 <Text style={{ color: colors.ink2, fontWeight: '700', fontSize: 13 }}>{fmtSum(item.price)}</Text>
               </View>
               <Text style={{ color: colors.muted }}>›</Text>

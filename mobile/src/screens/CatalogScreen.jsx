@@ -1,32 +1,33 @@
 import { useEffect, useState } from 'react';
-import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../api/client';
 import { colors, radius } from '../theme';
 import { Loading } from '../components/ui';
+import { useI18n } from '../i18n';
 
 /** Katalog — kategoriyalar daraxti */
 export default function CatalogScreen({ navigation }) {
-  const [sections, setSections] = useState(null);
+  const { t, lname } = useI18n();
+  const [cats, setCats] = useState(null);
 
   useEffect(() => {
-    api('/categories').then((d) =>
-      setSections(
-        d.categories.map((c) => ({
-          id: c.id,
-          title: c.name,
-          icon: c.icon,
-          data: c.children.length ? c.children : [{ id: c.id, name: 'Barcha mahsulotlar', icon: c.icon, _all: true }],
-        }))
-      )
-    ).catch(() => setSections([]));
+    api('/categories').then((d) => setCats(d.categories)).catch(() => setCats([]));
   }, []);
 
-  if (!sections) return <Loading />;
+  if (!cats) return <Loading />;
+
+  const sections = cats.map((c) => ({
+    id: c.id,
+    cat: c,
+    title: lname(c),
+    icon: c.icon,
+    data: c.children.length ? c.children : [{ id: c.id, _all: true }],
+  }));
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-      <Text style={s.title}>Katalog</Text>
+      <Text style={s.title}>{t('catalogTitle')}</Text>
       <SectionList
         sections={sections}
         keyExtractor={(item, i) => `${item.id}-${i}`}
@@ -45,9 +46,11 @@ export default function CatalogScreen({ navigation }) {
             onPress={() =>
               navigation.navigate('ProductList', {
                 category: item.id,
-                title: item._all ? section.title : item.name,
+                title: item._all ? section.title : lname(item),
               })}>
-            <Text style={s.rowText}>{item._all ? item.name : `${item.icon ? item.icon + ' ' : ''}${item.name}`}</Text>
+            <Text style={s.rowText}>
+              {item._all ? t('allProducts') : `${item.icon ? item.icon + ' ' : ''}${lname(item)}`}
+            </Text>
             <Text style={{ color: colors.muted }}>›</Text>
           </TouchableOpacity>
         )}

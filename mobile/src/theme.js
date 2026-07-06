@@ -20,20 +20,11 @@ export const colors = {
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 };
 export const radius = { sm: 8, md: 12, lg: 16, xl: 24, full: 999 };
 
-export const fmtSum = (n) => `${Number(n || 0).toLocaleString('ru-RU')} so'm`;
-
-export const fmtDate = (s) => {
-  if (!s) return '—';
-  const d = new Date(s.includes('T') ? s : s + 'Z');
-  return d.toLocaleString('ru-RU', {
-    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
-};
-
-export const ORDER_STATUS = {
-  pending: { label: 'Kutilmoqda', color: '#b7791f', bg: '#fdf2dc', icon: '🕐' },
-  confirmed: { label: 'Tasdiqlandi', color: '#1c5cab', bg: '#e7f1fd', icon: '✅' },
-  shipped: { label: "Yo'lda", color: '#9c4a13', bg: '#fdeadc', icon: '🚚' },
-  delivered: { label: 'Yetkazildi', color: '#0a7a0a', bg: '#e2f6e2', icon: '📦' },
-  cancelled: { label: 'Bekor qilindi', color: '#a12622', bg: '#fbe5e4', icon: '✖️' },
+/** Buyurtma holatining vizual uslubi (matn i18n lug'atidan olinadi) */
+export const ORDER_STATUS_STYLE = {
+  pending: { color: '#b7791f', bg: '#fdf2dc', icon: '🕐' },
+  confirmed: { color: '#1c5cab', bg: '#e7f1fd', icon: '✅' },
+  shipped: { color: '#9c4a13', bg: '#fdeadc', icon: '🚚' },
+  delivered: { color: '#0a7a0a', bg: '#e2f6e2', icon: '📦' },
+  cancelled: { color: '#a12622', bg: '#fbe5e4', icon: '✖️' },
 };

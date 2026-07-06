@@ -4,13 +4,15 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { api } from '../api/client';
-import { colors, radius, fmtSum } from '../theme';
+import { colors, radius } from '../theme';
 import { Button, Input } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
 /** Buyurtma rasmiylashtirish: manzil → to'lov → promokod → tasdiqlash */
 export default function CheckoutScreen({ navigation }) {
   const { cart, refreshCart } = useApp();
+  const { t, terr, fmtSum } = useI18n();
   const [addresses, setAddresses] = useState([]);
   const [addressId, setAddressId] = useState(null);
   const [payment, setPayment] = useState('cash');
@@ -48,7 +50,7 @@ export default function CheckoutScreen({ navigation }) {
       });
       setCoupon(d);
     } catch (e) {
-      setCouponError(e.message);
+      setCouponError(terr(e.message));
     }
   };
 
@@ -57,7 +59,7 @@ export default function CheckoutScreen({ navigation }) {
 
   const placeOrder = async () => {
     if (!addressId) {
-      Alert.alert('Manzil kerak', 'Avval yetkazib berish manzilini qo‘shing');
+      Alert.alert(t('needAddress'), t('needAddressText'));
       return;
     }
     setPlacing(true);
@@ -73,7 +75,7 @@ export default function CheckoutScreen({ navigation }) {
       await refreshCart();
       navigation.replace('OrderSuccess', { orders: d.orders });
     } catch (e) {
-      Alert.alert('Xatolik', e.message);
+      Alert.alert(t('error'), terr(e.message));
     } finally {
       setPlacing(false);
     }
@@ -83,7 +85,7 @@ export default function CheckoutScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140 }}>
         {/* Manzil */}
-        <Text style={s.section}>📍 Yetkazib berish manzili</Text>
+        <Text style={s.section}>{t('deliveryAddress')}</Text>
         {addresses.map((a) => (
           <TouchableOpacity key={a.id} style={[s.option, addressId === a.id && s.optionOn]}
             onPress={() => setAddressId(a.id)}>
@@ -98,13 +100,12 @@ export default function CheckoutScreen({ navigation }) {
           </TouchableOpacity>
         ))}
         <TouchableOpacity style={s.addBtn} onPress={() => navigation.navigate('AddressForm', {})}>
-          <Text style={{ color: colors.brand, fontWeight: '700' }}>+ Yangi manzil qo'shish</Text>
+          <Text style={{ color: colors.brand, fontWeight: '700' }}>{t('addNewAddress')}</Text>
         </TouchableOpacity>
 
         {/* To'lov */}
-        <Text style={s.section}>💳 To'lov usuli</Text>
-        {[['cash', '💵 Naqd pul', 'Yetkazib berilganda to‘laysiz'],
-          ['card', '💳 Karta orqali', 'Hozir onlayn to‘lov (demo)']].map(([key, label, hint]) => (
+        <Text style={s.section}>{t('paymentMethod')}</Text>
+        {[['cash', t('cash'), t('cashHint')], ['card', t('card'), t('cardHint')]].map(([key, label, hint]) => (
           <TouchableOpacity key={key} style={[s.option, payment === key && s.optionOn]}
             onPress={() => setPayment(key)}>
             <View style={{ flex: 1 }}>
@@ -116,38 +117,38 @@ export default function CheckoutScreen({ navigation }) {
         ))}
 
         {/* Promokod */}
-        <Text style={s.section}>🎟️ Promokod</Text>
+        <Text style={s.section}>{t('promo')}</Text>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <View style={{ flex: 1 }}>
             <Input placeholder="SALOM10" autoCapitalize="characters" value={couponCode}
               onChangeText={(v) => { setCouponCode(v); setCoupon(null); setCouponError(''); }}
               error={couponError} />
           </View>
-          <Button title="Qo'llash" variant="ghost" style={{ height: 48 }} onPress={applyCoupon} />
+          <Button title={t('apply')} variant="ghost" style={{ height: 48 }} onPress={applyCoupon} />
         </View>
         {coupon && (
           <Text style={{ color: colors.goodText, fontWeight: '600', marginTop: -6 }}>
-            ✓ "{coupon.coupon.code}" qo'llandi — {fmtSum(coupon.discount)} chegirma
+            {t('promoApplied', { code: coupon.coupon.code, n: fmtSum(coupon.discount) })}
           </Text>
         )}
 
         {/* Xulosa */}
-        <Text style={s.section}>🧾 Buyurtma xulosasi</Text>
+        <Text style={s.section}>{t('orderSummary')}</Text>
         <View style={s.summaryCard}>
-          <Row label={`Mahsulotlar (${cart.items.length})`} value={fmtSum(cart.subtotal)} />
-          <Row label="Yetkazib berish" value={cart.shipping_fee ? fmtSum(cart.shipping_fee) : 'Bepul'} />
-          {discount > 0 && <Row label="Chegirma" value={`−${fmtSum(discount)}`} good />}
+          <Row label={t('productsN', { n: cart.items.length })} value={fmtSum(cart.subtotal)} />
+          <Row label={t('shipping')} value={cart.shipping_fee ? fmtSum(cart.shipping_fee) : t('free')} />
+          {discount > 0 && <Row label={t('discount')} value={`−${fmtSum(discount)}`} good />}
           <View style={{ borderTopWidth: 1, borderTopColor: colors.line, marginVertical: 8 }} />
-          <Row label="Jami to'lov" value={fmtSum(total)} bold />
+          <Row label={t('totalPay')} value={fmtSum(total)} bold />
         </View>
       </ScrollView>
 
       <View style={s.bottomBar}>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.muted, fontSize: 11 }}>Jami</Text>
+          <Text style={{ color: colors.muted, fontSize: 11 }}>{t('total')}</Text>
           <Text style={{ fontWeight: '800', fontSize: 17, color: colors.ink }}>{fmtSum(total)}</Text>
         </View>
-        <Button title="Buyurtmani tasdiqlash" style={{ flex: 1.7 }} loading={placing} onPress={placeOrder} />
+        <Button title={t('confirmOrder')} style={{ flex: 1.7 }} loading={placing} onPress={placeOrder} />
       </View>
     </View>
   );

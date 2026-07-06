@@ -3,9 +3,11 @@ import { Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme';
 import { Button, Input } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useApp();
+  const { t, terr } = useI18n();
   const [form, setForm] = useState({ name: '', email: '', phone: '+998', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -14,14 +16,14 @@ export default function RegisterScreen({ navigation }) {
 
   const submit = async () => {
     setError('');
-    if (form.name.trim().length < 2) return setError('Ismingizni kiriting');
-    if (form.password.length < 6) return setError('Parol kamida 6 ta belgi bo‘lishi kerak');
+    if (form.name.trim().length < 2) return setError(t('nameErr'));
+    if (form.password.length < 6) return setError(t('passErr'));
     setBusy(true);
     try {
       await register({ ...form, email: form.email.trim() });
       navigation.goBack();
     } catch (e) {
-      setError(e.message);
+      setError(terr(e.message));
     } finally {
       setBusy(false);
     }
@@ -31,24 +33,24 @@ export default function RegisterScreen({ navigation }) {
     <ScrollView style={{ backgroundColor: colors.surface }} contentContainerStyle={s.wrap}
       keyboardShouldPersistTaps="handled">
       <Text style={s.logo}>🛒</Text>
-      <Text style={s.title}>Hisob yaratish</Text>
-      <Text style={s.sub}>Bir daqiqada ro'yxatdan o'ting</Text>
+      <Text style={s.title}>{t('createAccount')}</Text>
+      <Text style={s.sub}>{t('registerSub')}</Text>
 
       {error ? <Text style={s.error}>{error}</Text> : null}
 
-      <Input label="Ism" value={form.name} onChangeText={set('name')} placeholder="Ismingiz" />
-      <Input label="Email" value={form.email} onChangeText={set('email')}
+      <Input label={t('name')} value={form.name} onChangeText={set('name')} placeholder={t('namePh')} />
+      <Input label={t('email')} value={form.email} onChangeText={set('email')}
         keyboardType="email-address" autoCapitalize="none" placeholder="siz@email.uz" />
-      <Input label="Telefon" value={form.phone} onChangeText={set('phone')}
+      <Input label={t('phone')} value={form.phone} onChangeText={set('phone')}
         keyboardType="phone-pad" />
-      <Input label="Parol" value={form.password} onChangeText={set('password')}
-        secureTextEntry placeholder="Kamida 6 ta belgi" />
+      <Input label={t('password')} value={form.password} onChangeText={set('password')}
+        secureTextEntry placeholder={t('passwordPh')} />
 
-      <Button title="Ro'yxatdan o'tish" loading={busy} onPress={submit} />
+      <Button title={t('register')} loading={busy} onPress={submit} />
 
       <TouchableOpacity style={{ marginTop: 18 }} onPress={() => navigation.replace('Login')}>
         <Text style={{ textAlign: 'center', color: colors.ink2 }}>
-          Hisobingiz bormi? <Text style={{ color: colors.brand, fontWeight: '700' }}>Kirish</Text>
+          {t('haveAccount')} <Text style={{ color: colors.brand, fontWeight: '700' }}>{t('login')}</Text>
         </Text>
       </TouchableOpacity>
     </ScrollView>

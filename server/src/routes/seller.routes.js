@@ -73,7 +73,10 @@ sellerRouter.get('/products', (req, res) => {
 });
 
 function validateProductBody(body) {
-  const { name, category_id, price, old_price, stock, description = '', images = [], attributes = {} } = body || {};
+  const {
+    name, name_ru, category_id, price, old_price, stock,
+    description = '', description_ru, images = [], attributes = {},
+  } = body || {};
   if (!name || String(name).trim().length < 3) throw new ApiError(400, 'Mahsulot nomi kamida 3 ta belgi');
   const cat = db.prepare('SELECT id FROM categories WHERE id = ?').get(category_id);
   if (!cat) throw new ApiError(400, 'Kategoriya tanlanmagan yoki mavjud emas');
@@ -86,11 +89,13 @@ function validateProductBody(body) {
   if (!Array.isArray(images)) throw new ApiError(400, 'Rasmlar massiv bo‘lishi kerak');
   return {
     name: String(name).trim(),
+    name_ru: name_ru ? String(name_ru).trim().slice(0, 300) : null,
     category_id: cat.id,
     price: p,
     old_price: op,
     stock: s,
     description: String(description).slice(0, 10000),
+    description_ru: description_ru ? String(description_ru).slice(0, 10000) : null,
     images: JSON.stringify(images.slice(0, 10)),
     attributes: JSON.stringify(attributes || {}),
   };
@@ -102,10 +107,10 @@ sellerRouter.post('/products', (req, res) => {
   const v = validateProductBody(req.body);
   const result = db
     .prepare(
-      `INSERT INTO products (shop_id, category_id, name, description, price, old_price, stock, images, attributes, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'moderation')`
+      `INSERT INTO products (shop_id, category_id, name, name_ru, description, description_ru, price, old_price, stock, images, attributes, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'moderation')`
     )
-    .run(req.shop.id, v.category_id, v.name, v.description, v.price, v.old_price, v.stock, v.images, v.attributes);
+    .run(req.shop.id, v.category_id, v.name, v.name_ru, v.description, v.description_ru, v.price, v.old_price, v.stock, v.images, v.attributes);
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json({ product: serializeProduct(product) });
 });
@@ -121,9 +126,9 @@ sellerRouter.patch('/products/:id', (req, res) => {
     : product.status === 'archived' && req.body.status === 'active' ? 'moderation'
     : product.status;
   db.prepare(
-    `UPDATE products SET name = ?, description = ?, category_id = ?, price = ?, old_price = ?,
-     stock = ?, images = ?, attributes = ?, status = ? WHERE id = ?`
-  ).run(v.name, v.description, v.category_id, v.price, v.old_price, v.stock, v.images, v.attributes, status, product.id);
+    `UPDATE products SET name = ?, name_ru = ?, description = ?, description_ru = ?, category_id = ?,
+     price = ?, old_price = ?, stock = ?, images = ?, attributes = ?, status = ? WHERE id = ?`
+  ).run(v.name, v.name_ru, v.description, v.description_ru, v.category_id, v.price, v.old_price, v.stock, v.images, v.attributes, status, product.id);
   res.json({ product: serializeProduct(db.prepare('SELECT * FROM products WHERE id = ?').get(product.id)) });
 });
 

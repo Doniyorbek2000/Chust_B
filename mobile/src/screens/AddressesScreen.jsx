@@ -4,8 +4,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { api } from '../api/client';
 import { colors, radius } from '../theme';
 import { Loading, Empty, Button } from '../components/ui';
+import { useI18n } from '../i18n';
 
 export default function AddressesScreen({ navigation }) {
+  const { t } = useI18n();
   const [addresses, setAddresses] = useState(null);
 
   const load = useCallback(
@@ -20,10 +22,10 @@ export default function AddressesScreen({ navigation }) {
   );
 
   const remove = (a) => {
-    Alert.alert("O'chirish", `"${a.label}" manzili o'chirilsinmi?`, [
-      { text: 'Bekor qilish', style: 'cancel' },
+    Alert.alert(t('delete'), t('removeAddressQ', { label: a.label }), [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: "O'chirish", style: 'destructive',
+        text: t('delete'), style: 'destructive',
         onPress: async () => { await api(`/me/addresses/${a.id}`, { method: 'DELETE' }); load(); },
       },
     ]);
@@ -42,14 +44,14 @@ export default function AddressesScreen({ navigation }) {
         data={addresses}
         keyExtractor={(a) => String(a.id)}
         contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 100 }}
-        ListEmptyComponent={<Empty icon="📍" title="Manzil yo'q" text="Yetkazib berish manzilini qo'shing" />}
+        ListEmptyComponent={<Empty icon="📍" title={t('addressesEmpty')} text={t('addressesEmptyText')} />}
         renderItem={({ item }) => (
           <View style={s.card}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Text style={{ fontWeight: '800', color: colors.ink, fontSize: 15 }}>{item.label}</Text>
               {!!item.is_default && (
                 <View style={s.defaultBadge}>
-                  <Text style={{ color: colors.brandDark, fontSize: 11, fontWeight: '700' }}>Asosiy</Text>
+                  <Text style={{ color: colors.brandDark, fontSize: 11, fontWeight: '700' }}>{t('defaultAddr')}</Text>
                 </View>
               )}
             </View>
@@ -59,22 +61,22 @@ export default function AddressesScreen({ navigation }) {
             <Text style={{ color: colors.muted, fontSize: 13 }}>{item.phone}</Text>
             <View style={{ flexDirection: 'row', gap: 14, marginTop: 10 }}>
               <TouchableOpacity onPress={() => navigation.navigate('AddressForm', { address: item })}>
-                <Text style={s.link}>Tahrirlash</Text>
+                <Text style={s.link}>{t('edit')}</Text>
               </TouchableOpacity>
               {!item.is_default && (
                 <TouchableOpacity onPress={() => makeDefault(item)}>
-                  <Text style={s.link}>Asosiy qilish</Text>
+                  <Text style={s.link}>{t('makeDefault')}</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity onPress={() => remove(item)}>
-                <Text style={[s.link, { color: colors.danger }]}>O'chirish</Text>
+                <Text style={[s.link, { color: colors.danger }]}>{t('delete')}</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
       />
       <View style={s.bottom}>
-        <Button title="+ Yangi manzil" onPress={() => navigation.navigate('AddressForm', {})} />
+        <Button title={t('addAddress')} onPress={() => navigation.navigate('AddressForm', {})} />
       </View>
     </View>
   );

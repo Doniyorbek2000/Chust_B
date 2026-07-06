@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme';
 import { Button, Input } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useApp();
+  const { t, terr } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,7 +20,7 @@ export default function LoginScreen({ navigation }) {
       await login(email.trim(), password);
       navigation.goBack();
     } catch (e) {
-      setError(e.message);
+      setError(terr(e.message));
     } finally {
       setBusy(false);
     }
@@ -28,22 +30,22 @@ export default function LoginScreen({ navigation }) {
     <ScrollView style={{ backgroundColor: colors.surface }} contentContainerStyle={s.wrap}
       keyboardShouldPersistTaps="handled">
       <Text style={s.logo}>🛒</Text>
-      <Text style={s.title}>ADM Bozor'ga xush kelibsiz</Text>
-      <Text style={s.sub}>Hisobingizga kiring</Text>
+      <Text style={s.title}>{t('welcome')}</Text>
+      <Text style={s.sub}>{t('loginSub')}</Text>
 
       {error ? <Text style={s.error}>{error}</Text> : null}
 
-      <Input label="Email" value={email} onChangeText={setEmail}
+      <Input label={t('email')} value={email} onChangeText={setEmail}
         keyboardType="email-address" autoCapitalize="none" placeholder="siz@email.uz" />
-      <Input label="Parol" value={password} onChangeText={setPassword}
+      <Input label={t('password')} value={password} onChangeText={setPassword}
         secureTextEntry placeholder="••••••" />
 
-      <Button title="Kirish" loading={busy} onPress={submit} disabled={!email || !password} />
+      <Button title={t('login')} loading={busy} onPress={submit} disabled={!email || !password} />
 
       <TouchableOpacity style={{ marginTop: 18 }}
         onPress={() => navigation.replace('Register')}>
         <Text style={{ textAlign: 'center', color: colors.ink2 }}>
-          Hisobingiz yo'qmi? <Text style={{ color: colors.brand, fontWeight: '700' }}>Ro'yxatdan o'ting</Text>
+          {t('noAccount')} <Text style={{ color: colors.brand, fontWeight: '700' }}>{t('registerLink')}</Text>
         </Text>
       </TouchableOpacity>
     </ScrollView>

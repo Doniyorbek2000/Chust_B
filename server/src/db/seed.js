@@ -93,6 +93,43 @@ const seed = db.transaction(() => {
   products.push(P(shop1, cats['oziq-ovqat'], 'Tabiiy asal 1kg (tog‘ asali)', 'Chust tog‘laridan yig‘ilgan sof tabiiy asal. Sertifikatlangan.', 129000, null, 70, { "Og'irlik": '1 kg', Manba: 'Tog‘ asali' }, 4.9, 167, 640, 'honey-mountain'));
   products.push(P(shop1, cats.uy, 'Choy servizi 12 kishilik (chinni)', 'Klassik naqshli chinni serviz — mehmonlar uchun bezak.', 549000, 690000, 14, { Material: 'Chinni', Kishilar: '12' }, 4.5, 41, 120, 'tea-set'));
 
+  /* --- Ruscha nomlar (mobil ilova 3 tilda ishlaydi) --- */
+  const catRu = {
+    elektronika: 'Электроника', kiyim: 'Одежда', uy: 'Дом и быт',
+    gozallik: 'Красота', sport: 'Спорт', bolalar: 'Для детей',
+    'oziq-ovqat': 'Продукты', kitoblar: 'Книги',
+    smartfonlar: 'Смартфоны', noutbuklar: 'Ноутбуки', quloqchinlar: 'Наушники',
+    erkaklar: 'Мужская одежда', ayollar: 'Женская одежда',
+  };
+  const updCatRu = db.prepare('UPDATE categories SET name_ru = ? WHERE slug = ?');
+  for (const [slug, ru] of Object.entries(catRu)) updCatRu.run(ru, slug);
+
+  const productRu = {
+    'Samsung Galaxy S24 Ultra 12/512GB': 'Samsung Galaxy S24 Ultra 12/512ГБ',
+    'iPhone 15 Pro Max 256GB': 'iPhone 15 Pro Max 256ГБ',
+    'Xiaomi Redmi Note 13 Pro 8/256GB': 'Xiaomi Redmi Note 13 Pro 8/256ГБ',
+    'MacBook Air 13" M3 8/256GB': 'MacBook Air 13" M3 8/256ГБ',
+    'Lenovo IdeaPad Slim 3 i5/16/512': 'Lenovo IdeaPad Slim 3 i5/16/512',
+    'AirPods Pro 2 (USB-C)': 'AirPods Pro 2 (USB-C)',
+    'Sony WH-1000XM5': 'Sony WH-1000XM5',
+    'Xiaomi Mi Smart Band 9': 'Xiaomi Mi Smart Band 9',
+    'Xiaomi Robot Vacuum S12': 'Робот-пылесос Xiaomi S12',
+    'Erkaklar klassik ko‘ylagi (oq)': 'Мужская классическая рубашка (белая)',
+    'Jinsi shim slim-fit (to‘q ko‘k)': 'Джинсы slim-fit (тёмно-синие)',
+    'Ayollar yozgi ko‘ylagi (gulli)': 'Женское летнее платье (цветочное)',
+    'Ayollar charm sumkasi': 'Женская кожаная сумка',
+    'Yoga to‘shagi 6mm (TPE)': 'Коврик для йоги 6мм (TPE)',
+    'Krossovka Running Pro (unisex)': 'Кроссовки Running Pro (унисекс)',
+    'LEGO Classic 500 detal to‘plami': 'Набор LEGO Classic 500 деталей',
+    'Bolalar velosipedi 16" (qizil)': 'Детский велосипед 16" (красный)',
+    'Parfyum to‘plami (3x30ml)': 'Парфюмерный набор (3x30мл)',
+    '"Atomic Habits" — J. Klir (o‘zbek tilida)': '«Атомные привычки» — Дж. Клир',
+    'Tabiiy asal 1kg (tog‘ asali)': 'Натуральный мёд 1кг (горный)',
+    'Choy servizi 12 kishilik (chinni)': 'Чайный сервиз на 12 персон (фарфор)',
+  };
+  const updProdRu = db.prepare('UPDATE products SET name_ru = ? WHERE name = ?');
+  for (const [uz, ru] of Object.entries(productRu)) updProdRu.run(ru, uz);
+
   /* --- Moderatsiyada turgan mahsulot (admin panelda ko'rinadi) --- */
   db.prepare(
     `INSERT INTO products (shop_id, category_id, name, description, price, stock, images, status)

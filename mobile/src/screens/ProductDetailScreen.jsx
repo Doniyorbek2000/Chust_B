@@ -3,16 +3,31 @@ import {
   View, Text, ScrollView, Image, TouchableOpacity, FlatList,
   Dimensions, StyleSheet, Alert,
 } from 'react-native';
-import { api, imgUrl, ApiError } from '../api/client';
-import { colors, radius, fmtSum, fmtDate } from '../theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api, imgUrl } from '../api/client';
+import { colors, radius } from '../theme';
 import { Button, Rating, Price, ProductCard, Loading, Empty } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
 const { width: SCREEN_W } = Dimensions.get('window');
+const RECENT_KEY = 'adm_recent_products';
+
+/** Ko'rilgan mahsulotni "oxirgi ko'rilganlar" ro'yxatiga yozadi (20 tagacha) */
+async function trackRecent(id) {
+  try {
+    const ids = JSON.parse((await AsyncStorage.getItem(RECENT_KEY)) || '[]');
+    const next = [id, ...ids.filter((x) => x !== id)].slice(0, 20);
+    await AsyncStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  } catch {
+    /* jim */
+  }
+}
 
 export default function ProductDetailScreen({ route, navigation }) {
   const { id } = route.params;
   const { user, favIds, toggleFavorite, addToCart, cart } = useApp();
+  const { t, lname, terr, fmtSum, fmtDate } = useI18n();
 
   const [product, setProduct] = useState(null);
   const [similar, setSimilar] = useState([]);
@@ -27,29 +42,31 @@ export default function ProductDetailScreen({ route, navigation }) {
       const d = await api(`/products/${id}`);
       setProduct(d.product);
       setSimilar(d.similar);
+      trackRecent(d.product.id);
       const r = await api(`/products/${id}/reviews?limit=2`);
       setReviews(r.reviews);
       setReviewTotal(r.total);
     } catch (e) {
-      setError(e.message);
+      setError(terr(e.message));
     }
-  }, [id]);
+  }, [id]); // eslint-disable-line
 
   useEffect(() => {
     load();
   }, [load]);
 
-  if (error) return <Empty icon="😕" title="Mahsulot topilmadi" text={error} />;
+  if (error) return <Empty icon="😕" title={t('productNotFound')} text={error} />;
   if (!product) return <Loading />;
 
   const inCartQty = cart.items.find((i) => i.product.id === product.id)?.qty || 0;
   const isFav = favIds.has(product.id);
+  const description = lname(product, 'description');
 
   const requireAuth = (fn) => () => {
     if (!user) {
-      Alert.alert('Kirish kerak', 'Bu amal uchun hisobingizga kiring', [
-        { text: 'Bekor qilish', style: 'cancel' },
-        { text: 'Kirish', onPress: () => navigation.navigate('Login') },
+      Alert.alert(t('authNeeded'), t('authNeededText'), [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('login'), onPress: () => navigation.navigate('Login') },
       ]);
       return;
     }
@@ -61,7 +78,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     try {
       await addToCart(product.id, 1);
     } catch (e) {
-      Alert.alert('Xatolik', e instanceof ApiError ? e.message : 'Savatga qo‘shib bo‘lmadi');
+      Alert.alert(t('error'), terr(e.message) || t('cantAddCart'));
     } finally {
       setAdding(false);
     }
@@ -98,7 +115,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           {product.discount_percent > 0 && (
             <View style={s.salePill}>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>
-                −{product.discount_percent}% chegirma
+                −{product.discount_percent}%
               </Text>
             </View>
           )}
@@ -106,10 +123,10 @@ export default function ProductDetailScreen({ route, navigation }) {
 
         {/* Asosiy ma'lumot */}
         <View style={s.block}>
-          <Text style={s.name}>{product.name}</Text>
+          <Text style={s.name}>{lname(product)}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 }}>
             <Rating value={product.rating} count={product.rating_count} size={14} />
-            <Text style={{ color: colors.muted, fontSize: 13 }}>{product.sold_count} marta sotilgan</Text>
+            <Text style={{ color: colors.muted, fontSize: 13 }}>{t('soldCount', { n: product.sold_count })}</Text>
           </View>
           <View style={{ marginTop: 10 }}>
             <Price price={product.price} oldPrice={product.old_price} size={24} />
@@ -117,9 +134,9 @@ export default function ProductDetailScreen({ route, navigation }) {
           <Text style={{ marginTop: 6, color: product.stock > 0 ? colors.goodText : colors.danger, fontWeight: '600', fontSize: 13 }}>
             {product.stock > 0
               ? product.stock <= 5
-                ? `⚠️ Omborda atigi ${product.stock} dona qoldi`
-                : '✓ Omborda mavjud'
-              : 'Omborda qolmagan'}
+                ? t('lowStock', { n: product.stock })
+                : t('inStock')
+              : t('outOfStock')}
           </Text>
         </View>
 
@@ -143,7 +160,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         {/* Xususiyatlar */}
         {Object.keys(product.attributes).length > 0 && (
           <View style={s.block}>
-            <Text style={s.blockTitle}>Xususiyatlar</Text>
+            <Text style={s.blockTitle}>{t('specs')}</Text>
             {Object.entries(product.attributes).map(([k, v]) => (
               <View key={k} style={s.attrRow}>
                 <Text style={{ color: colors.ink2, flex: 1 }}>{k}</Text>
@@ -154,25 +171,25 @@ export default function ProductDetailScreen({ route, navigation }) {
         )}
 
         {/* Tavsif */}
-        {product.description ? (
+        {description ? (
           <View style={s.block}>
-            <Text style={s.blockTitle}>Tavsif</Text>
-            <Text style={{ color: colors.ink2, lineHeight: 21 }}>{product.description}</Text>
+            <Text style={s.blockTitle}>{t('description')}</Text>
+            <Text style={{ color: colors.ink2, lineHeight: 21 }}>{description}</Text>
           </View>
         ) : null}
 
         {/* Sharhlar */}
         <View style={s.block}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={s.blockTitle}>Sharhlar ({reviewTotal})</Text>
+            <Text style={s.blockTitle}>{t('reviewsCount', { n: reviewTotal })}</Text>
             {reviewTotal > 0 && (
-              <TouchableOpacity onPress={() => navigation.navigate('Reviews', { productId: product.id, name: product.name })}>
-                <Text style={{ color: colors.brand, fontWeight: '600' }}>Barchasi →</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Reviews', { productId: product.id })}>
+                <Text style={{ color: colors.brand, fontWeight: '600' }}>{t('viewAll')}</Text>
               </TouchableOpacity>
             )}
           </View>
           {reviews.length === 0 && (
-            <Text style={{ color: colors.muted, marginTop: 6 }}>Hozircha sharh yo'q</Text>
+            <Text style={{ color: colors.muted, marginTop: 6 }}>{t('noReviews')}</Text>
           )}
           {reviews.map((r) => (
             <View key={r.id} style={s.review}>
@@ -189,7 +206,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         {/* O'xshash mahsulotlar */}
         {similar.length > 0 && (
           <View style={{ marginTop: 8, marginBottom: 12 }}>
-            <Text style={[s.blockTitle, { paddingHorizontal: 16, marginBottom: 10 }]}>O'xshash mahsulotlar</Text>
+            <Text style={[s.blockTitle, { paddingHorizontal: 16, marginBottom: 10 }]}>{t('similar')}</Text>
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -209,14 +226,14 @@ export default function ProductDetailScreen({ route, navigation }) {
       {/* Pastki panel */}
       <View style={s.bottomBar}>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.muted, fontSize: 11 }}>Narx</Text>
+          <Text style={{ color: colors.muted, fontSize: 11 }}>{t('price')}</Text>
           <Text style={{ fontWeight: '800', fontSize: 17, color: colors.ink }}>{fmtSum(product.price)}</Text>
         </View>
         {inCartQty > 0 ? (
-          <Button title={`Savatda (${inCartQty}) — o'tish`} style={{ flex: 1.6 }}
+          <Button title={t('goToCart', { n: inCartQty })} style={{ flex: 1.6 }}
             onPress={() => navigation.navigate('Main', { screen: 'Cart' })} />
         ) : (
-          <Button title={product.stock > 0 ? '🛒 Savatga qo‘shish' : 'Omborda yo‘q'}
+          <Button title={product.stock > 0 ? t('addToCart') : t('outOfStock')}
             style={{ flex: 1.6 }} disabled={product.stock === 0} loading={adding} onPress={handleAdd} />
         )}
       </View>

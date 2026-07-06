@@ -6,20 +6,22 @@ import { api } from '../api/client';
 import { colors, radius } from '../theme';
 import { ProductCard, Empty, Button, Input, Loading } from '../components/ui';
 import { useApp } from '../store/AppContext';
+import { useI18n } from '../i18n';
 
-const SORTS = [
-  ['popular', 'Ommabop'],
-  ['new', 'Yangi'],
-  ['price_asc', 'Arzon → qimmat'],
-  ['price_desc', 'Qimmat → arzon'],
-  ['rating', 'Reyting'],
-  ['discount', 'Chegirma'],
+const SORT_KEYS = [
+  ['popular', 'sortPopular'],
+  ['new', 'sortNew'],
+  ['price_asc', 'sortPriceAsc'],
+  ['price_desc', 'sortPriceDesc'],
+  ['rating', 'sortRating'],
+  ['discount', 'sortDiscount'],
 ];
 
 /** Mahsulotlar ro'yxati — kategoriya, qidiruv, saralash va narx filtri bilan */
 export default function ProductListScreen({ route, navigation }) {
   const { category, q, shop, sort: initialSort = 'popular' } = route.params || {};
   const { favIds, toggleFavorite, user } = useApp();
+  const { t } = useI18n();
 
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
@@ -68,13 +70,13 @@ export default function ProductListScreen({ route, navigation }) {
       {/* Saralash / filtr paneli */}
       <View style={s.toolbar}>
         <TouchableOpacity style={s.toolBtn} onPress={() => setShowSort(true)}>
-          <Text style={s.toolText}>↕️ {SORTS.find(([k]) => k === sort)?.[1]}</Text>
+          <Text style={s.toolText}>↕️ {t(SORT_KEYS.find(([k]) => k === sort)?.[1])}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[s.toolBtn, hasFilter && { borderColor: colors.brand }]}
           onPress={() => setShowFilter(true)}>
-          <Text style={[s.toolText, hasFilter && { color: colors.brand }]}>⚙️ Filtr{hasFilter ? ' •' : ''}</Text>
+          <Text style={[s.toolText, hasFilter && { color: colors.brand }]}>⚙️ {t('filter')}{hasFilter ? ' •' : ''}</Text>
         </TouchableOpacity>
-        <Text style={{ marginLeft: 'auto', color: colors.muted, fontSize: 12 }}>{total} ta</Text>
+        <Text style={{ marginLeft: 'auto', color: colors.muted, fontSize: 12 }}>{t('count', { n: total })}</Text>
       </View>
 
       {loading ? (
@@ -90,8 +92,7 @@ export default function ProductListScreen({ route, navigation }) {
           onEndReachedThreshold={0.4}
           ListFooterComponent={loadingMore ? <ActivityIndicator color={colors.brand} style={{ margin: 16 }} /> : null}
           ListEmptyComponent={
-            <Empty icon="🔍" title="Hech narsa topilmadi"
-              text="Qidiruv so'zini yoki filtrlarni o'zgartirib ko'ring" />
+            <Empty icon="🔍" title={t('notFound')} text={t('notFoundText')} />
           }
           renderItem={({ item }) => (
             <ProductCard
@@ -108,12 +109,12 @@ export default function ProductListScreen({ route, navigation }) {
       <Modal visible={showSort} transparent animationType="slide" onRequestClose={() => setShowSort(false)}>
         <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={() => setShowSort(false)}>
           <View style={s.sheet}>
-            <Text style={s.sheetTitle}>Saralash</Text>
-            {SORTS.map(([key, label]) => (
+            <Text style={s.sheetTitle}>{t('sortTitle')}</Text>
+            {SORT_KEYS.map(([key, labelKey]) => (
               <TouchableOpacity key={key} style={s.sheetRow}
                 onPress={() => { setSort(key); setShowSort(false); }}>
                 <Text style={{ fontSize: 15, color: sort === key ? colors.brand : colors.ink, fontWeight: sort === key ? '700' : '400' }}>
-                  {label}
+                  {t(labelKey)}
                 </Text>
                 {sort === key && <Text style={{ color: colors.brand, fontWeight: '800' }}>✓</Text>}
               </TouchableOpacity>
@@ -126,23 +127,23 @@ export default function ProductListScreen({ route, navigation }) {
       <Modal visible={showFilter} transparent animationType="slide" onRequestClose={() => setShowFilter(false)}>
         <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={() => setShowFilter(false)}>
           <View style={s.sheet}>
-            <Text style={s.sheetTitle}>Narx bo'yicha filtr</Text>
+            <Text style={s.sheetTitle}>{t('priceFilter')}</Text>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1 }}>
-                <Input label="Dan (so'm)" keyboardType="numeric" value={priceRange.min}
+                <Input label={t('priceFrom')} keyboardType="numeric" value={priceRange.min}
                   onChangeText={(v) => setPriceRange({ ...priceRange, min: v.replace(/\D/g, '') })}
                   placeholder="0" />
               </View>
               <View style={{ flex: 1 }}>
-                <Input label="Gacha (so'm)" keyboardType="numeric" value={priceRange.max}
+                <Input label={t('priceTo')} keyboardType="numeric" value={priceRange.max}
                   onChangeText={(v) => setPriceRange({ ...priceRange, max: v.replace(/\D/g, '') })}
                   placeholder="∞" />
               </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Button title="Tozalash" variant="ghost" style={{ flex: 1 }}
+              <Button title={t('clear')} variant="ghost" style={{ flex: 1 }}
                 onPress={() => { setPriceRange({ min: '', max: '' }); setShowFilter(false); }} />
-              <Button title="Qo'llash" style={{ flex: 1 }} onPress={() => setShowFilter(false)} />
+              <Button title={t('apply')} style={{ flex: 1 }} onPress={() => setShowFilter(false)} />
             </View>
           </View>
         </TouchableOpacity>

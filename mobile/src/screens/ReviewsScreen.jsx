@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { api } from '../api/client';
-import { colors, radius, fmtDate } from '../theme';
+import { colors, radius } from '../theme';
 import { Loading, Empty } from '../components/ui';
+import { useI18n } from '../i18n';
 
 /** Mahsulotning barcha sharhlari — baho taqsimoti bilan */
 export default function ReviewsScreen({ route }) {
   const { productId } = route.params;
+  const { t, fmtDate } = useI18n();
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function ReviewsScreen({ route }) {
           ))}
         </View>
       }
-      ListEmptyComponent={<Empty icon="💬" title="Sharh yo'q" text="Bu mahsulotga hali sharh yozilmagan" />}
+      ListEmptyComponent={<Empty icon="💬" title={t('noReviews')} text={t('noReviewsText')} />}
       renderItem={({ item }) => (
         <View style={s.review}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>

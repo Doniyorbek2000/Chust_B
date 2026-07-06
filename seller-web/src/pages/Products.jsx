@@ -119,11 +119,13 @@ function ProductModal({ product, cats, onClose, onSaved }) {
   const isNew = !product.id;
   const [form, setForm] = useState({
     name: product.name || '',
+    name_ru: product.name_ru || '',
     category_id: product.category_id || '',
     price: product.price || '',
     old_price: product.old_price || '',
     stock: product.stock ?? '',
     description: product.description || '',
+    description_ru: product.description_ru || '',
   });
   const [images, setImages] = useState(product.images || []);
   const [attrs, setAttrs] = useState(Object.entries(product.attributes || {}));
@@ -189,8 +191,12 @@ function ProductModal({ product, cats, onClose, onSaved }) {
         </p>
       )}
       <div className="field">
-        <label>Nomi</label>
+        <label>Nomi (o'zbekcha)</label>
         <input value={form.name} onChange={set('name')} autoFocus placeholder="Mahsulot nomi" />
+      </div>
+      <div className="field">
+        <label>Название (ruscha — mobil ilovada rus tilini tanlaganlar uchun, ixtiyoriy)</label>
+        <input value={form.name_ru} onChange={set('name_ru')} placeholder="Название товара" />
       </div>
       <div className="field">
         <label>Kategoriya</label>
@@ -216,8 +222,12 @@ function ProductModal({ product, cats, onClose, onSaved }) {
         </div>
       </div>
       <div className="field">
-        <label>Tavsif</label>
+        <label>Tavsif (o'zbekcha)</label>
         <textarea value={form.description} onChange={set('description')} />
+      </div>
+      <div className="field">
+        <label>Описание (ruscha, ixtiyoriy)</label>
+        <textarea value={form.description_ru} onChange={set('description_ru')} />
       </div>
 
       <div className="field">

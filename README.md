@@ -11,13 +11,22 @@ Amazon, Uzum Market, Temu uslubidagi to'liq marketplace tizimi. Uch tomonlama ar
 
 ## Imkoniyatlar
 
+### 🌐 Ko'p tillilik (mobil ilova)
+- **3 til:** o'zbek (lotin), ўзбек (кирилл), русский — birinchi ochilishda tanlanadi, Profil → Til orqali istalgan payt almashtiriladi
+- Interfeysning barcha matnlari qo'lda tarjima qilingan (`mobile/src/i18n/translations.js`)
+- **Kirill rejimi:** sotuvchi kiritgan mahsulot nomi/tavsifi avtomatik lotin→kirill transliteratsiya qilinadi
+- **Rus rejimi:** sotuvchi paneldagi ixtiyoriy «Название/Описание (ru)» maydonlari ko'rsatiladi, bo'lmasa o'zbekcha fallback
+- Server xatolari ham mijozda tarjima qilinadi; valyuta (so'm/сўм/сум) va sanalar lokalizatsiya qilingan
+- Qidiruv o'zbekcha va ruscha nomlar bo'yicha ishlaydi
+
 ### 🛍️ Haridor (mobil ilova)
 - Ro'yxatdan o'tish / kirish (JWT, sessiya saqlanadi)
 - Bosh sahifa: avtomatik aylanuvchi bannerlar, kategoriyalar, chegirmalar, ommabop va yangi mahsulotlar
 - Katalog: kategoriyalar daraxti; qidiruv: jonli natijalar va qidiruv tarixi
 - Mahsulotlar ro'yxati: saralash (6 xil), narx filtri, cheksiz scroll
 - Mahsulot sahifasi: rasm galereyasi, xususiyatlar, sharhlar, o'xshash mahsulotlar, do'kon
-- Savat: miqdor boshqaruvi, ombor nazorati, yetkazish hisobi (300 000 so'mdan bepul)
+- Savat: miqdor boshqaruvi, ombor nazorati, bepul yetkazishgacha progress bari (300 000 so'mdan bepul)
+- Bosh sahifada «Oxirgi ko'rilganlar» bo'limi (lokal saqlanadi)
 - Buyurtma: manzil, to'lov usuli (naqd/karta), promokod
 - Buyurtma kuzatuvi: jarayon chizig'i, tarix, bekor qilish; yetkazilganini baholash
 - Sevimlilar, manzillar, bildirishnomalar, profil

@@ -1,8 +1,9 @@
 import {
   View, Text, TouchableOpacity, TextInput, StyleSheet, ActivityIndicator, Image,
 } from 'react-native';
-import { colors, radius, fmtSum } from '../theme';
+import { colors, radius } from '../theme';
 import { imgUrl } from '../api/client';
+import { useI18n } from '../i18n';
 
 /* ---------- Tugma ---------- */
 
@@ -50,6 +51,7 @@ export function Input({ label, error, style, ...props }) {
 /* ---------- Narx ---------- */
 
 export function Price({ price, oldPrice, size = 15 }) {
+  const { fmtSum } = useI18n();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', gap: 6 }}>
       <Text style={{ fontSize: size, fontWeight: '700', color: colors.ink }}>{fmtSum(price)}</Text>
@@ -78,6 +80,7 @@ export function Rating({ value, count, size = 12 }) {
 /* ---------- Mahsulot kartasi (gridda) ---------- */
 
 export function ProductCard({ product, onPress, onToggleFav, isFav, width }) {
+  const { lname } = useI18n();
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={[s.card, width ? { width } : { flex: 1 }]}>
       <View>
@@ -95,7 +98,7 @@ export function ProductCard({ product, onPress, onToggleFav, isFav, width }) {
       </View>
       <View style={{ padding: 10, gap: 4 }}>
         <Text numberOfLines={2} style={{ fontSize: 13, color: colors.ink, minHeight: 34 }}>
-          {product.name}
+          {lname(product)}
         </Text>
         <Rating value={product.rating} count={product.rating_count} />
         <Price price={product.price} oldPrice={product.old_price} size={14} />
@@ -144,12 +147,13 @@ export function Loading() {
 /* ---------- Bo'lim sarlavhasi ---------- */
 
 export function SectionHead({ title, onMore }) {
+  const { t } = useI18n();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginTop: 20, marginBottom: 10 }}>
       <Text style={{ fontSize: 17, fontWeight: '800', color: colors.ink }}>{title}</Text>
       {onMore && (
         <TouchableOpacity onPress={onMore}>
-          <Text style={{ color: colors.brand, fontWeight: '600' }}>Barchasi →</Text>
+          <Text style={{ color: colors.brand, fontWeight: '600' }}>{t('viewAll')}</Text>
         </TouchableOpacity>
       )}
     </View>
