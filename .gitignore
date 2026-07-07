@@ -1,0 +1,21 @@
+# Bog'liqliklar
+node_modules/
+
+# Build natijalari
+dist/
+build/
+.expo/
+web-build/
+
+# Ma'lumotlar bazasi va yuklangan fayllar
+server/data/
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Muhit fayllari
+.env
+.env.local
+
+# Tizim fayllari
+.DS_Store
+*.log

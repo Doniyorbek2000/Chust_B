@@ -1,0 +1,24 @@
+# ADM Bozor — production ishga tushirish
+# 1) .env faylini yarating (server/.env.example asosida)
+# 2) docker compose up -d --build
+# 3) Nginx/Caddy bilan 4000-portni HTTPS ortiga qo'ying
+
+services:
+  admbozor:
+    build: .
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET majburiy — openssl rand -hex 32}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+    volumes:
+      - admbozor-data:/app/server/data
+      - admbozor-uploads:/app/server/uploads
+
+volumes:
+  admbozor-data:
+  admbozor-uploads:
